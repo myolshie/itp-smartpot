@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Title</title>
+		<!-- Required meta tags -->
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, shrink-to-fit=no"
+		/>
+
+		<!-- Bootstrap CSS v5.2.1 -->
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+			crossorigin="anonymous"
+		/>
+	</head>
+
+	<body>
+		<header>
+			<!-- place navbar here -->
+		</header>
+		<main>
+			<form id="mainform">
+				<h2>Login User</h2>
+				<div class="form-floating mb-3">
+					<input type="email" class="form-control" id="email" placeholder="name@example.com">
+					<label for="floatingInput">Email address</label>
+				  </div>
+				  <div class="form-floating mb-3">
+					<input type="password" class="form-control" id="password" placeholder="Password">
+					<label for="floatingPassword">Password</label>
+				  </div>
+				  <button type="submit" class="btn btn-primary">Login</button>
+				  <a href="register.html"><button type="button" class="btn btn-primary">Register</button></a>
+			</form>
+		</main>
+		<footer>
+			<!-- place footer here -->
+		</footer>
+		<!-- Bootstrap JavaScript Libraries -->
+		<script
+			src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+			integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+			crossorigin="anonymous"
+		></script>
+
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+			integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+			crossorigin="anonymous"
+		></script>
+
+		<script type="module">
+			// Import the functions you need from the SDKs you need
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+			import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+			import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+			const firebaseConfig = {
+			apiKey: "AIzaSyCAd8obhPga8Bj6WQa24OptLX1R39wMUT4",
+			authDomain: "smartpot-daf58.firebaseapp.com",
+			databaseURL: "https://smartpot-daf58-default-rtdb.asia-southeast1.firebasedatabase.app",
+			projectId: "smartpot-daf58",
+			storageBucket: "smartpot-daf58.appspot.com",
+			messagingSenderId: "1021845898220",
+			appId: "1:1021845898220:web:b3c85c3bbf071a2113b6c9",
+			measurementId: "G-PM8156BQ8Z"
+			};
+
+			// Initialize Firebase
+			const app = initializeApp(firebaseConfig);
+			const db = getFirestore();
+			const auth = getAuth(app);
+			
+			let email = document.getElementById("email");
+			let pass = document.getElementById("password");
+			let name = document.getElementById("name");
+
+			let SignInUser = evt => {
+				evt.preventDefault();
+
+				signInWithEmailAndPassword(auth, email.value, pass.value)
+				.then(async (credentials) => {
+					var ref = doc(db, 'UserAuthList', credentials.user.uid);
+					const docSnap = await getDoc(ref);
+
+					if (docSnap.exists()){
+						sessionStorage.setItem("user-info", JSON.stringify({
+							name: docSnap.data().name,
+						}))
+						sessionStorage.setItem("user-creds", JSON.stringify(credentials.user))
+						window.location.href = "index.html";
+					}
+				
+				})
+				.catch((error) => {
+					alert(error.message);
+					console.log(error.code);
+					console.log(error.message);
+				})
+			}
+
+			mainform.addEventListener('submit', SignInUser);
+		</script>
+	</body>
+</html>

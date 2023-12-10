@@ -45,6 +45,7 @@
 						<div class="d-flex align-items-center">
 							<i class="fas fa-align-left primary-text fs-4 me-3" id="menu-toggle"></i>
 							<h2 class="fs-2 m-0">Trang chủ</h2>
+							<h5 id="helloMsg"></h5>
 						</div>
 		
 						<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -61,7 +62,8 @@
 										<i class="fas fa-user me-2"></i>Xin chào
 									</a>
 									<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-										<li><a class="dropdown-item" href="#">Logout</a></li>
+										<li><a class="dropdown-item">Logout</a></li>
+										<li><button id="signOutBtn">signOut</button></li>
 									</ul>
 								</li>
 							</ul>
@@ -72,38 +74,38 @@
 						<div class="row g-3 my-2">
 							<div class="col-md-3">
 								<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-									<div>
-										<h3 class="fs-2 value" id="temperature">720</h3>
-										<p class="fs-5">Nhiệt độ</p>
-									</div>
 									<i class="fs-1 primary-text bi bi-thermometer-half"></i>
+									<div>
+										<p class="fs-5">Nhiệt độ</p>
+										<h3 class="fs-2 value" id="temperature">720</h3>
+									</div>
 								</div>
 							</div>
 
 							<div class="col-md-3">
 								<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-									<div>
-										<h3 class="fs-2">3899</h3>
-										<p class="fs-5">Ánh sáng</p>
-									</div>
 									<i class="fs-1 primary-text bi bi-brightness-alt-high"></i>
+									<div>
+										<p class="fs-5">Ánh sáng</p>
+										<h3 class="fs-2 value" id="light">3899</h3>
+									</div>
 								</div>
 							</div>
 		
 							<div class="col-md-3">
 								<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
+									<i class="fs-1 primary-text bi bi-moisture"></i>
 									<div>
-										<h3 class="fs-2 value" id="humidity">4920</h3>
 										<p class="fs-5">Độ ẩm đất</p>
+										<h3 class="fs-2 value" id="moisture">4920</h3>
 									</div>
-									<i
-										class="fs-1 primary-text bi bi-moisture"></i>
 								</div>
 							</div>
 		
 							
 						</div>
-		
+	
+						
 						<div class="row my-5">
 							<h3 class="fs-4 mb-3">Biểu đồ</h3>
 							<div>
@@ -131,53 +133,82 @@
 			crossorigin="anonymous"
 		></script>
 
+		<script>
+			let UserCreds = JSON.parse(sessionStorage.getItem("user-creds"));
+			let UserInfo = JSON.parse(sessionStorage.getItem("user-info"));
+
+			let helloMsg = document.getElementById("helloMsg");
+			let signOutBtn = document.getElementById("signOutBtn");
+
+			helloMsg.innerText = `Xin chao, ${UserInfo.name}`;
+
+			let signOut = () => {
+				sessionStorage.removeItem("user-creds");
+				sessionStorage.removeItem("user-info");
+				window.location.href = 'login.html';
+			}
+
+			let checkCred = () => {
+				if (!sessionStorage.getItem("user-creds"))
+					window.location.href = 'login.html'
+				else {
+					helloMsg.innerText = `Xin chao, ${UserInfo.name}`;
+				}
+			}
+
+			window.addEventListener('load', checkCred);
+			signOutBtn.addEventListener('click', signOut);
+		</script>
+
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-		<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-
-		<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-
 		<!-- Firebase -->
+		<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+
 		<script type="module">
 			// Import the functions you need from the SDKs you need
 			import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
-			// TODO: Add SDKs for Firebase products that you want to use
-			// https://firebase.google.com/docs/web/setup#available-libraries
-	  
-			// Your web app's Firebase configuration here (Do not use the existing configuration)
 			const firebaseConfig = {
-				apiKey: "AIzaSyCAd8obhPga8Bj6WQa24OptLX1R39wMUT4",
-				authDomain: "smartpot-daf58.firebaseapp.com",
-				databaseURL: "https://smartpot-daf58-default-rtdb.asia-southeast1.firebasedatabase.app",
-				projectId: "smartpot-daf58",
-				storageBucket: "smartpot-daf58.appspot.com",
-				messagingSenderId: "1021845898220",
-				appId: "1:1021845898220:web:b3c85c3bbf071a2113b6c9",
-				measurementId: "G-PM8156BQ8Z"
-				};
-	  
+			apiKey: "AIzaSyCAd8obhPga8Bj6WQa24OptLX1R39wMUT4",
+			authDomain: "smartpot-daf58.firebaseapp.com",
+			databaseURL: "https://smartpot-daf58-default-rtdb.asia-southeast1.firebasedatabase.app",
+			projectId: "smartpot-daf58",
+			storageBucket: "smartpot-daf58.appspot.com",
+			messagingSenderId: "1021845898220",
+			appId: "1:1021845898220:web:b3c85c3bbf071a2113b6c9",
+			measurementId: "G-PM8156BQ8Z"
+			};
+
 			// Initialize Firebase
 			firebase.initializeApp(firebaseConfig);
-	  
-	  
+
+
 			// getting reference to the database
 			var database = firebase.database();
-	  
+
 			//getting reference to the data we want
-			var dataRef1 = database.ref('Status/Humidity');
-			var dataRef2 = database.ref('Status/Temperature');
-	  
+			var dataRef1 = database.ref('Status/Temperature');
+			var dataRef2 = database.ref('Status/Light');
+			var dataRef3 = database.ref('Status/Moisture');
+
 			//fetch the data
 			dataRef1.on('value', function(getdata1){
-				var humi = getdata1.val();
-				document.getElementById('humidity').innerHTML = humi + "%";
+			var temp = getdata1.val();
+			document.getElementById('temperature').innerHTML = temp + "&#8451;";
 			})
-	  
-			 dataRef2.on('value', function(getdata2){
-				var temp = getdata2.val();
-				document.getElementById('temperature').innerHTML = temp + "&#8451;";
+
+			dataRef2.on('value', function(getdata2){
+			var light = getdata2.val();
+			document.getElementById('light').innerHTML = light + "%";
 			})
-	  
+
+			dataRef3.on('value', function(getdata3){
+			var mois = getdata3.val();
+			document.getElementById('moisture').innerHTML = mois + "%";
+			})
+
 		</script>
 
 		<!-- Chart -->
