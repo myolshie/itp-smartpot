@@ -77,7 +77,7 @@
 									<i class="fs-1 primary-text bi bi-thermometer-half"></i>
 									<div>
 										<p class="fs-5">Nhiệt độ</p>
-										<h3 class="fs-2 value" id="temperature">720</h3>
+										<h3 class="fs-2 value" id="temperature">0000</h3>
 									</div>
 								</div>
 							</div>
@@ -87,7 +87,7 @@
 									<i class="fs-1 primary-text bi bi-brightness-alt-high"></i>
 									<div>
 										<p class="fs-5">Ánh sáng</p>
-										<h3 class="fs-2 value" id="light">3899</h3>
+										<h3 class="fs-2 value" id="light">0000</h3>
 									</div>
 								</div>
 							</div>
@@ -97,7 +97,7 @@
 									<i class="fs-1 primary-text bi bi-moisture"></i>
 									<div>
 										<p class="fs-5">Độ ẩm đất</p>
-										<h3 class="fs-2 value" id="moisture">4920</h3>
+										<h3 class="fs-2 value" id="moisture">0000</h3>
 									</div>
 								</div>
 							</div>
@@ -108,9 +108,16 @@
 						
 						<div class="row my-5">
 							<h3 class="fs-4 mb-3">Biểu đồ</h3>
-							<div>
-								<canvas id="myChart"></canvas>
-							  </div>
+							<div class="col-6">
+								<div>
+									<canvas id="dailyChart"></canvas>
+								</div>
+							</div>
+							<div class="col-6">
+								<div>
+									<canvas id="weeklyChart"></canvas>
+								</div>
+							</div>
 							  
 						</div>
 					</div>
@@ -140,8 +147,6 @@
 			let helloMsg = document.getElementById("helloMsg");
 			let signOutBtn = document.getElementById("signOutBtn");
 
-			helloMsg.innerText = `Xin chao, ${UserInfo.name}`;
-
 			let signOut = () => {
 				sessionStorage.removeItem("user-creds");
 				sessionStorage.removeItem("user-info");
@@ -150,12 +155,12 @@
 
 			let checkCred = () => {
 				if (!sessionStorage.getItem("user-creds"))
-					window.location.href = 'login.html'
+					window.location.href = 'login.html';
 				else {
-					helloMsg.innerText = `Xin chao, ${UserInfo.name}`;
+					console.log(sessionStorage.getItem("user-creds"));
+					helloMsg.innerText = `Xin chào, ${UserInfo.name}`;
 				}
 			}
-
 			window.addEventListener('load', checkCred);
 			signOutBtn.addEventListener('click', signOut);
 		</script>
@@ -163,13 +168,12 @@
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 		<!-- Firebase -->
-		<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-		<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
 
 		<script type="module">
 			// Import the functions you need from the SDKs you need
-			import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+			import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+			import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 			const firebaseConfig = {
 			apiKey: "AIzaSyCAd8obhPga8Bj6WQa24OptLX1R39wMUT4",
 			authDomain: "smartpot-daf58.firebaseapp.com",
@@ -182,58 +186,193 @@
 			};
 
 			// Initialize Firebase
-			firebase.initializeApp(firebaseConfig);
+			const app = initializeApp(firebaseConfig);
 
 
 			// getting reference to the database
-			var database = firebase.database();
+			const database = getDatabase(app);
+			const db = getFirestore(app)
 
+			const colRef = collection(db, 'DailyStatus');
+			// Get all documents in the collection
+			const snapshot = await getDocs(colRef);
+			
 			//getting reference to the data we want
-			var dataRef1 = database.ref('Status/Temperature');
-			var dataRef2 = database.ref('Status/Light');
-			var dataRef3 = database.ref('Status/Moisture');
+			let currentHour = new Date().getHours();
+			setInterval(() => {
+				currentHour = new Date().getHours();
+			}, 60 * 60 * 1000);
+			var dataRef1 = ref(database, 'Status/Temperature');
+			var docRef = doc(db, `DailyStatus/${currentHour}`);
+			var dataRef2 = ref(database, 'Status/Light');
+			var dataRef3 = ref(database, 'Status/Moisture');
 
 			//fetch the data
-			dataRef1.on('value', function(getdata1){
-			var temp = getdata1.val();
-			document.getElementById('temperature').innerHTML = temp + "&#8451;";
-			})
+			let dailyData = [];
+			let tempData = [];
+			let tempSum = 0;
+			let count = 0;
+			onValue(dataRef1, async (snapshot) => {
+				var temp = snapshot.val();
+				document.getElementById('temperature').innerHTML = temp + "&#8451;";
+				let newHour = new Date().getHours();
+				if (newHour !== currentHour) {
+					let avgTemp = tempSum / count;
+					await setDoc(docRef, {AvgTemp: avgTemp});
+					dailyData.push(avgTemp);
+					// Reset the data
+					tempData = [];
+					tempSum = 0;
+					count = 0;
+					currentHour = newHour;
+					// If a new day has started
+					if (newHour === 0) {
+						// Reset the collection
+						snapshot.docs.forEach((doc) => {
+							deleteDoc(doc.ref);
+						});
+						
+					}
+				}
+				tempData.push(temp);
+				tempSum += temp;
+				count++;
+			});
 
-			dataRef2.on('value', function(getdata2){
-			var light = getdata2.val();
-			document.getElementById('light').innerHTML = light + "%";
-			})
+			onValue(dataRef2, async (snapshot) => {
+				var light = snapshot.val();
+				document.getElementById('light').innerHTML = light + "%";
+			});
+			
+			onValue(dataRef3, (snapshot) => {
+				var mois = snapshot.val();
+				document.getElementById('moisture').innerHTML = mois + "%";
+			});
 
-			dataRef3.on('value', function(getdata3){
-			var mois = getdata3.val();
-			document.getElementById('moisture').innerHTML = mois + "%";
-			})
+			const dailydata = {
+				labels: ['0','1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11',
+		  		   '12','13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
+				datasets: [{
+					label: 'Nhiệt độ',
+					data: dailyData,
+					backgroundColor: [
+						'rgba(255, 26, 104, 0.2)',
+					],
+					borderColor: [
+						'rgba(255, 26, 104, 1)',
+					],
+					tension: 0.4,
+				},
+				{
+					label: 'Độ ẩm',
+					data: [8, 2, 16, 7, 1, 4, 6],
+					backgroundColor: [
+						'rgba(0, 0, 0, 0.2)'
+					],
+					borderColor: [
+						'rgba(0, 0, 0, 1)'
+					],
+					tension: 0.4,
+					yAxisID: 'percentage'
+				}]
+			};
 
+			// config 
+			const dailyconfig = {
+			type: 'line',
+			data: dailydata,
+			options: {
+				scales: {
+				y: {
+					beginAtZero: true,
+					title: {
+						display: true,
+						text: 'Độ C'
+					}
+				},
+				percentage: {
+					beginAtZero: true,
+					position: 'right',
+					title: {
+						display: true,
+						text: '%'
+					}
+				}
+				}
+			}
+			};
+		
+			// render init block
+			const dailyChart = new Chart(
+			document.getElementById('dailyChart'),
+			dailyconfig
+			);
+			
 		</script>
 
 		<!-- Chart -->
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 		<script>
-			const ctx = document.getElementById('myChart');
-		  
-			new Chart(ctx, {
-			  type: 'line',
-			  data: {
-				labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-				datasets: [{
-				  label: '# of Votes',
-				  data: [12, 19, 3, 5, 2, 3],
-				  borderWidth: 1
-				}]
+			// setup 
+			const weeklydata = {
+			  labels: ['Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 'Bảy', 'CN'],
+			  datasets: [{
+				label: 'Nhiệt độ',
+				data: [18, 12, 6, 9, 12, 3, 9],
+				backgroundColor: [
+				  'rgba(255, 26, 104, 0.2)',
+				],
+				borderColor: [
+				  'rgba(255, 26, 104, 1)',
+	
+				],
+				tension: 0.4,
 			  },
+			  {
+				label: 'Độ ẩm',
+				data: [8, 2, 16, 7, 1, 4, 6],
+				backgroundColor: [
+				  'rgba(0, 0, 0, 0.2)'
+				],
+				borderColor: [
+				  'rgba(0, 0, 0, 1)'
+				],
+				tension: 0.4,
+				yAxisID: 'percentage'
+			  }]
+			};
+		
+			// config 
+			const weeklyconfig = {
+			  type: 'line',
+			  data: weeklydata,
 			  options: {
 				scales: {
 				  y: {
-					beginAtZero: true
+					beginAtZero: true,
+					title: {
+						display: true,
+						text: 'Độ C'
+					}
+				  },
+				  percentage: {
+					beginAtZero: true,
+					position: 'right',
+					title: {
+						display: true,
+						text: '%'
+					}
 				  }
 				}
 			  }
-			});
-		  </script>
-		  
+			};
+		
+			// render init block
+			var weeklyChart = new Chart(
+			  document.getElementById('weeklyChart'),
+			  weeklyconfig
+			);
+		</script>
 	</body>
+
 </html>
