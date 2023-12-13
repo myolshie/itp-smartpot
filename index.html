@@ -22,107 +22,79 @@
 
 	<body>
 		<header>
-			<!-- place navbar here -->
+			<div class="container-fluid">
+				<nav class="navbar navbar-expand-lg my-3 h-97 py-3 px-3 rounded bg-white">
+					<div class="d-flex align-items-center">
+						<h3 id="helloMsg"></h3>
+					</div>
+					
+					<ul class="navbar-nav ms-auto mb-lg-0">
+						<li class="nav-item">
+							<button class="btn btn-success rounded-full fs-5" id="configBtn"><i class="bi bi-gear-fill"></i></button>
+						</li>
+						<li class="nav-item">
+							<button class="btn btn-danger rounded-full fs-5" id="signOutBtn"><i class="bi bi-power"></i></button>
+						</li>
+					</ul>
+				</nav>
+			</div>
 		</header>
 		<main>
-			<div class="d-flex" id="wrapper">
-				<!-- Sidebar -->
-				<div class="bg-white" id="sidebar-wrapper">
-					<div class="sidebar-heading text-center py-4 primary-text fs-4 fw-bold text-uppercase border-bottom"><i
-							class="fas fa-user-secret me-2"></i>SmartPot</div>
-					<div class="list-group list-group-flush my-3">
-						<a href="#" class="list-group-item list-group-item-action bg-transparent second-text active"><i
-								class="fas fa-tachometer-alt me-2"></i>Trang chủ</a>
-						<a href="#" class="list-group-item list-group-item-action bg-transparent second-text fw-bold"><i
-								class="fas fa-project-diagram me-2"></i>Cấu hình</a>
-					</div>
+			<!-- Page Content -->
+			<div class="container px-3 py-3 h-97 rounded my-2">
+				<div class="row mb-1">
+					<h3 class="primary-text">Trạng thái</h3>
 				</div>
-				<!-- /#sidebar-wrapper -->
-		
-				<!-- Page Content -->
-				<div id="page-content-wrapper">
-					<nav class="navbar navbar-expand-lg navbar-light bg-transparent py-4 px-4">
-						<div class="d-flex align-items-center">
-							<i class="fas fa-align-left primary-text fs-4 me-3" id="menu-toggle"></i>
-							<h2 class="fs-2 m-0">Trang chủ</h2>
-							<h5 id="helloMsg"></h5>
-						</div>
-		
-						<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-							data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-							aria-expanded="false" aria-label="Toggle navigation">
-							<span class="navbar-toggler-icon"></span>
-						</button>
-		
-						<div class="collapse navbar-collapse" id="navbarSupportedContent">
-							<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-								<li class="nav-item dropdown">
-									<a class="nav-link dropdown-toggle second-text fw-bold" href="#" id="navbarDropdown"
-										role="button" data-bs-toggle="dropdown" aria-expanded="false">
-										<i class="fas fa-user me-2"></i>Xin chào
-									</a>
-									<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-										<li><a class="dropdown-item">Logout</a></li>
-										<li><button id="signOutBtn">signOut</button></li>
-									</ul>
-								</li>
-							</ul>
-						</div>
-					</nav>
-		
-					<div class="container-fluid px-4">
-						<div class="row g-3 my-2">
-							<div class="col-md-3">
-								<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-									<i class="fs-1 primary-text bi bi-thermometer-half"></i>
-									<div>
-										<p class="fs-5">Nhiệt độ</p>
-										<h3 class="fs-2 value" id="temperature">0000</h3>
-									</div>
-								</div>
+				<div class="row g-3 mb-2">
+					<div class="col-md-3">
+						<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
+							<i class="fs-1 primary-text bi bi-thermometer-half"></i>
+							<div>
+								<p class="fs-5">Nhiệt độ</p>
+								<h3 class="fs-2 value" id="temperature">0000</h3>
 							</div>
+						</div>
+					</div>
 
-							<div class="col-md-3">
-								<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-									<i class="fs-1 primary-text bi bi-brightness-alt-high"></i>
-									<div>
-										<p class="fs-5">Ánh sáng</p>
-										<h3 class="fs-2 value" id="light">0000</h3>
-									</div>
-								</div>
+					<div class="col-md-3">
+						<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
+							<i class="fs-1 primary-text bi bi-brightness-alt-high"></i>
+							<div>
+								<p class="fs-5">Ánh sáng</p>
+								<h3 class="fs-2 value" id="light">0000</h3>
 							</div>
-		
-							<div class="col-md-3">
-								<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-									<i class="fs-1 primary-text bi bi-moisture"></i>
-									<div>
-										<p class="fs-5">Độ ẩm đất</p>
-										<h3 class="fs-2 value" id="moisture">0000</h3>
-									</div>
-								</div>
-							</div>
-		
-							
 						</div>
-	
-						
-						<div class="row my-5">
-							<h3 class="fs-4 mb-3">Biểu đồ</h3>
-							<div class="col-6">
-								<div>
-									<canvas id="dailyChart"></canvas>
-								</div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
+							<i class="fs-1 primary-text bi bi-moisture"></i>
+							<div>
+								<p class="fs-5">Độ ẩm đất</p>
+								<h3 class="fs-2 value" id="moisture">0000</h3>
 							</div>
-							<div class="col-6">
-								<div>
-									<canvas id="weeklyChart"></canvas>
-								</div>
-							</div>
-							  
+						</div>
+					</div>				
+				</div>
+			</div>
+			<div class="container px-3 py-3 rounded">
+				<div class="row mb-1">
+					<h3>Biểu đồ</h3>
+				</div>
+				<div class="row mb-5">
+					<div class="col-lg-5 col-md-10 col-sm-10">
+						<div>
+							<canvas id="dailyChart"></canvas>
+						</div>
+					</div>
+					<div class="col-lg-5 col-md-10 col-sm-10">
+						<div>
+							<canvas id="weeklyChart"></canvas>
 						</div>
 					</div>
 				</div>
 			</div>
+
 		</main>
 		<footer>
 			<!-- place footer here -->
@@ -212,11 +184,15 @@
 			let tempData = [];
 			let tempSum = 0;
 			let count = 0;
-			onValue(dataRef1, async (snapshot) => {
+			onValue(dataRef1, (snapshot) => {
 				var temp = snapshot.val();
 				document.getElementById('temperature').innerHTML = temp + "&#8451;";
-				let newHour = new Date().getHours();
-				if (newHour !== currentHour) {
+			});
+			setInterval(() => {
+				onValue(dataRef1, async (snapshot) => {
+					var temp = snapshot.val();
+					let newHour = new Date().getHours();
+						if (newHour !== currentHour) {
 					let avgTemp = tempSum / count;
 					await setDoc(docRef, {AvgTemp: avgTemp});
 					dailyData.push(avgTemp);
@@ -234,11 +210,11 @@
 						
 					}
 				}
-				tempData.push(temp);
-				tempSum += temp;
-				count++;
-			});
-
+					tempData.push(temp);
+					tempSum += temp;
+					count++;
+				});
+			}, 30 * 1000);
 			onValue(dataRef2, async (snapshot) => {
 				var light = snapshot.val();
 				document.getElementById('light').innerHTML = light + "%";
