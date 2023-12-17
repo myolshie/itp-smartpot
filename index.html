@@ -18,6 +18,7 @@
 		/>
 		<link rel="stylesheet" href="style.css">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+
 	</head>
 
 	<body>
@@ -30,7 +31,7 @@
 					
 					<ul class="navbar-nav ms-auto mb-lg-0">
 						<li class="nav-item">
-							<button class="btn btn-success rounded-full fs-5" id="configBtn"><i class="bi bi-gear-fill"></i></button>
+							<button class="btn btn-success rounded-full fs-5" id="configBtn" data-bs-toggle="modal" data-bs-target="#myModal"><i class="bi bi-gear-fill"></i></button>
 						</li>
 						<li class="nav-item">
 							<button class="btn btn-danger rounded-full fs-5" id="signOutBtn"><i class="bi bi-power"></i></button>
@@ -41,55 +42,63 @@
 		</header>
 		<main>
 			<!-- Page Content -->
-			<div class="container px-3 py-3 h-97 rounded my-2">
+			<div class="container px-3 py-3 h-97 rounded my-2 bg-trans">
 				<div class="row mb-1">
 					<h3 class="primary-text">Trạng thái</h3>
 				</div>
 				<div class="row g-3 mb-2">
-					<div class="col-md-3">
+					<div class="col-md-4">
 						<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-							<i class="fs-1 primary-text bi bi-thermometer-half"></i>
-							<div>
-								<p class="fs-5">Nhiệt độ</p>
-								<h3 class="fs-2 value" id="temperature">0000</h3>
+							<div class="col-4 text-center text-danger">
+								<i class="fs-1 primary-text bi bi-thermometer-half"></i>
+								<p class="fs-5 fw-bold">Nhiệt độ</p>
+							</div>
+							<div class="col-8 text-center">
+								<h2 class="fs-2 value" id="temperature">0000</h2>
 							</div>
 						</div>
 					</div>
 
-					<div class="col-md-3">
+					<div class="col-md-4">
 						<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-							<i class="fs-1 primary-text bi bi-brightness-alt-high"></i>
-							<div>
-								<p class="fs-5">Ánh sáng</p>
-								<h3 class="fs-2 value" id="light">0000</h3>
+							<div class="col-4 text-center text-warning">
+								<i class="fs-1 primary-text bi bi-brightness-alt-high"></i>
+								<p class="fs-5 fw-bold">Ánh sáng</p>
+							</div>
+							<div class ="col-8 text-center">
+								<h2 class="fs-2 value" id="light">0000</h2>
 							</div>
 						</div>
 					</div>
 
-					<div class="col-md-3">
+					<div class="col-md-4">
 						<div class="p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
-							<i class="fs-1 primary-text bi bi-moisture"></i>
-							<div>
-								<p class="fs-5">Độ ẩm đất</p>
-								<h3 class="fs-2 value" id="moisture">0000</h3>
+							<div class="col-4 text-center text-info">
+								<i class="fs-1 primary-text bi bi-moisture"></i>
+								<p class="fs-5 fw-bold">Độ ẩm đất</p>
+							</div>
+							<div class="col-8 text-center">
+								<h2 class="fs-2 value" id="moisture">0000</h2>
 							</div>
 						</div>
 					</div>				
 				</div>
 			</div>
-			<div class="container px-3 py-3 rounded">
+			<div class="container px-3 py-3 rounded bg-trans">
 				<div class="row mb-1">
 					<h3>Biểu đồ</h3>
 				</div>
+				<div class="row mb-1">
+					<div class="btn-group" role="group" aria-label="Basic mixed styles example">
+						<button type="button" class="btn btn-danger" value="1" onclick="fetchData(this.value)">Nhiệt độ</button>
+						<button type="button" class="btn btn-warning" value="2" onclick="fetchData(this.value)"">Ánh sáng</button>
+						<button type="button" class="btn btn-info" value="3" onclick="fetchData(this.value)"">Độ ẩm đất</button>
+					</div>
+				</div>
 				<div class="row mb-5">
-					<div class="col-lg-5 col-md-10 col-sm-10">
+					<div class="row">
 						<div>
 							<canvas id="dailyChart"></canvas>
-						</div>
-					</div>
-					<div class="col-lg-5 col-md-10 col-sm-10">
-						<div>
-							<canvas id="weeklyChart"></canvas>
 						</div>
 					</div>
 				</div>
@@ -144,211 +153,377 @@
 		<script type="module">
 			// Import the functions you need from the SDKs you need
 			import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-			import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
-			import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+			import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+			import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 			const firebaseConfig = {
-			apiKey: "AIzaSyCAd8obhPga8Bj6WQa24OptLX1R39wMUT4",
-			authDomain: "smartpot-daf58.firebaseapp.com",
-			databaseURL: "https://smartpot-daf58-default-rtdb.asia-southeast1.firebasedatabase.app",
-			projectId: "smartpot-daf58",
-			storageBucket: "smartpot-daf58.appspot.com",
-			messagingSenderId: "1021845898220",
-			appId: "1:1021845898220:web:b3c85c3bbf071a2113b6c9",
-			measurementId: "G-PM8156BQ8Z"
+				apiKey: "AIzaSyCJPBjtbTLSPS_xTJ7p_EpI6-S6qaJZ55o",
+				authDomain: "smartpot-cd823.firebaseapp.com",
+				databaseURL: "https://smartpot-cd823-default-rtdb.asia-southeast1.firebasedatabase.app/",
+				projectId: "smartpot-cd823",
+				storageBucket: "smartpot-cd823.appspot.com",
+				messagingSenderId: "551725394878",
+				appId: "1:551725394878:web:d5cf0509725a2181e6a7ef",
+				measurementId: "G-9B2KZR34XV"
 			};
 
 			// Initialize Firebase
 			const app = initializeApp(firebaseConfig);
 
-
 			// getting reference to the database
 			const database = getDatabase(app);
-			const db = getFirestore(app)
+			//const db = getFirestore(app)
 
-			const colRef = collection(db, 'DailyStatus');
+			//const colRef = collection(db, 'DailyStatus');
 			// Get all documents in the collection
-			const snapshot = await getDocs(colRef);
-			
+			//const snapshot = await getDocs(colRef);
 			//getting reference to the data we want
 			let currentHour = new Date().getHours();
-			setInterval(() => {
-				currentHour = new Date().getHours();
-			}, 60 * 60 * 1000);
+
+			//var docRef = doc(db, `DailyStatus/${currentHour}`);
 			var dataRef1 = ref(database, 'Status/Temperature');
-			var docRef = doc(db, `DailyStatus/${currentHour}`);
 			var dataRef2 = ref(database, 'Status/Light');
 			var dataRef3 = ref(database, 'Status/Moisture');
+			var minTempRef = ref(database, 'Setting/minTemp');
+			var maxTempRef = ref(database, 'Setting/maxTemp');
+			var minLightRef = ref(database, 'Setting/minLight');
+			var maxLightRef = ref(database, 'Setting/maxLight');
+			var minMoisRef = ref(database, 'Setting/minMois');
 
-			//fetch the data
-			let dailyData = [];
-			let tempData = [];
-			let tempSum = 0;
-			let count = 0;
 			onValue(dataRef1, (snapshot) => {
 				var temp = snapshot.val();
 				document.getElementById('temperature').innerHTML = temp + "&#8451;";
 			});
-			setInterval(() => {
-				onValue(dataRef1, async (snapshot) => {
-					var temp = snapshot.val();
-					let newHour = new Date().getHours();
-						if (newHour !== currentHour) {
-					let avgTemp = tempSum / count;
-					await setDoc(docRef, {AvgTemp: avgTemp});
-					dailyData.push(avgTemp);
-					// Reset the data
-					tempData = [];
-					tempSum = 0;
-					count = 0;
-					currentHour = newHour;
-					// If a new day has started
-					if (newHour === 0) {
-						// Reset the collection
-						snapshot.docs.forEach((doc) => {
-							deleteDoc(doc.ref);
-						});
-						
-					}
-				}
-					tempData.push(temp);
-					tempSum += temp;
-					count++;
-				});
-			}, 30 * 1000);
-			onValue(dataRef2, async (snapshot) => {
+			onValue(dataRef2, (snapshot) => {
 				var light = snapshot.val();
-				document.getElementById('light').innerHTML = light + "%";
+				document.getElementById('light').innerHTML = light + " lux";
 			});
-			
 			onValue(dataRef3, (snapshot) => {
 				var mois = snapshot.val();
 				document.getElementById('moisture').innerHTML = mois + "%";
 			});
-
-			const dailydata = {
-				labels: ['0','1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11',
-		  		   '12','13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
-				datasets: [{
-					label: 'Nhiệt độ',
-					data: dailyData,
-					backgroundColor: [
-						'rgba(255, 26, 104, 0.2)',
-					],
-					borderColor: [
-						'rgba(255, 26, 104, 1)',
-					],
-					tension: 0.4,
-				},
-				{
-					label: 'Độ ẩm',
-					data: [8, 2, 16, 7, 1, 4, 6],
-					backgroundColor: [
-						'rgba(0, 0, 0, 0.2)'
-					],
-					borderColor: [
-						'rgba(0, 0, 0, 1)'
-					],
-					tension: 0.4,
-					yAxisID: 'percentage'
-				}]
-			};
-
-			// config 
-			const dailyconfig = {
-			type: 'line',
-			data: dailydata,
-			options: {
-				scales: {
-				y: {
-					beginAtZero: true,
-					title: {
-						display: true,
-						text: 'Độ C'
-					}
-				},
-				percentage: {
-					beginAtZero: true,
-					position: 'right',
-					title: {
-						display: true,
-						text: '%'
-					}
-				}
-				}
-			}
-			};
-		
-			// render init block
-			const dailyChart = new Chart(
-			document.getElementById('dailyChart'),
-			dailyconfig
-			);
 			
+			configBtn.addEventListener('click', () => {
+				onValue(minTempRef, (snapshot) => {
+					document.getElementById('slider-minTemp').value = snapshot.val();
+					slideMinTemp();
+				});
+				onValue(maxTempRef, (snapshot) => {
+					document.getElementById('slider-maxTemp').value = snapshot.val();
+					slideMaxTemp();
+				});
+				onValue(minLightRef, (snapshot) => {
+					document.getElementById('slider-minLight').value = snapshot.val();
+					slideMinLight();
+				});
+				onValue(maxLightRef, (snapshot) => {
+					document.getElementById('slider-maxLight').value = snapshot.val();
+					slideMaxLight();
+				});
+				onValue(minMoisRef, (snapshot) => {
+					document.getElementById('slider-mois').value = snapshot.val();
+					slideMois();
+				});
+			})
+
+			saveBtn.addEventListener('click', () => {
+				set(ref(database, 'Setting'), {
+    			minTemp: parseInt(document.getElementById('slider-minTemp').value),
+				maxTemp: parseInt(document.getElementById('slider-maxTemp').value),
+				minLight: parseInt(document.getElementById('slider-minLight').value),
+				maxLight: parseInt(document.getElementById('slider-maxLight').value),
+				minMois: parseInt(document.getElementById('slider-mois').value),
+				});
+			});
+
 		</script>
 
 		<!-- Chart -->
 		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 		<script>
 			// setup 
-			const weeklydata = {
-			  labels: ['Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 'Bảy', 'CN'],
-			  datasets: [{
-				label: 'Nhiệt độ',
-				data: [18, 12, 6, 9, 12, 3, 9],
-				backgroundColor: [
-				  'rgba(255, 26, 104, 0.2)',
-				],
-				borderColor: [
-				  'rgba(255, 26, 104, 1)',
-	
-				],
-				tension: 0.4,
-			  },
-			  {
-				label: 'Độ ẩm',
-				data: [8, 2, 16, 7, 1, 4, 6],
-				backgroundColor: [
-				  'rgba(0, 0, 0, 0.2)'
-				],
-				borderColor: [
-				  'rgba(0, 0, 0, 1)'
-				],
-				tension: 0.4,
-				yAxisID: 'percentage'
-			  }]
-			};
-		
-			// config 
-			const weeklyconfig = {
-			  type: 'line',
-			  data: weeklydata,
-			  options: {
-				scales: {
-				  y: {
-					beginAtZero: true,
-					title: {
-						display: true,
-						text: 'Độ C'
+			let datas = [];
+			let labels = [];
+			let myChart = null;
+			fetch('https://api.thingspeak.com/channels/2382943/feeds.json?api_key=G7XZBACS91INHVO0')
+				  .then(response => response.json())
+				  .then(data => {
+					labels = data.feeds.map(feed => new Date(feed.created_at).toLocaleTimeString()); // Replace 'field1' with your field
+					datas = data.feeds.map(feed => feed.field1); 
+					createChart(labels, datas, 1);
+				  })
+				  .catch(error => console.error('Error:', error));
+			function fetchData(field) {
+				fetch('https://api.thingspeak.com/channels/2382943/feeds.json?api_key=G7XZBACS91INHVO0')
+				  .then(response => response.json())
+				  .then(data => {
+					labels = data.feeds.map(feed => new Date(feed.created_at).toLocaleTimeString()); // Replace 'field1' with your field
+					// Now you can use dailyTempData in your chart
+					if (field == 1) {
+						datas = data.feeds.map(feed => feed.field1); 
 					}
-				  },
-				  percentage: {
-					beginAtZero: true,
-					position: 'right',
-					title: {
-						display: true,
-						text: '%'
+					else if (field == 2) {
+						datas = data.feeds.map(feed => feed.field2); 
+					} else {
+						datas = data.feeds.map(feed => feed.field3); 
 					}
-				  }
+					createChart(labels, datas, field);
+				  })
+				  .catch(error => console.error('Error:', error));
+			}
+			function createChart(labels, datas, field) {
+				var name;
+				var calc;
+				var bgc = [];
+				var bdc = [];
+				if (field == 1) {
+					name = "Nhiệt độ";
+					calc = "°C";
+					bgc.push('rgba(220,53,69, 0.2)');
+					bdc.push('rgba(220,53,69, 1)');
 				}
-			  }
-			};
+				else if (field == 2) {
+					name = "Ánh sáng";
+					calc = "lux";
+					bgc.push('rgba(255,193,7, 0.2)');
+					bdc.push('rgba(255,193,7, 1)');
+				} else {
+					name = "Độ ẩm đất";
+					calc = "%";
+					bgc.push('rgba(13,202,240, 0.2)');
+					bdc.push('rgba(13,202,240, 1)');
+				}
+				const data = {
+					labels: labels,
+					datasets: [{
+						label: name,
+						data: datas,
+						backgroundColor: bgc,
+						borderColor: bdc,
+						tension: 0.4,
+					},]
+				};	
+				// config 
+				const config = {
+				type: 'line',
+				data: data,
+				options: {
+					scales: {
+					y: {
+						title: {
+							display: true,
+							text: calc
+						}
+					},
+				}}};
+			
+				// render init block
+				if (myChart) {
+        			myChart.destroy();
+    			}
+				myChart = new Chart(
+					document.getElementById('dailyChart'),
+					config
+				);
+			}
+			
+		</script>
+		<!--Setting Modal-->
 		
-			// render init block
-			var weeklyChart = new Chart(
-			  document.getElementById('weeklyChart'),
-			  weeklyconfig
-			);
+		<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+			  <div class="modal-content">
+				<div class="modal-header">
+				  <h5 class="modal-title" id="exampleModalLabel">Cấu hình thông báo</h5>
+				  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-lg-4 col-md-4 col-sm-6">
+							<div class="values">
+								<div class="fw-bold">Nhiệt độ (°C)</div>
+								<span id="temprange1">
+									0
+								</span>
+								<span> &dash; </span>
+								<span id="temprange2">
+									50
+								</span>
+							</div>
+						</div>
+						<div class="col-lg-8 col-md-8 col-sm-6">
+							<div class="range-container">
+								<div class="slider-temptrack"></div>
+								<input type="range" min="0" max="50" value="10" id="slider-minTemp" oninput="slideMinTemp()">
+								<input type="range" min="0" max="50" value="30" id="slider-maxTemp" oninput="slideMaxTemp()">
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-4 col-md-4 col-sm-6">
+							<div class="values">
+								<div class="fw-bold">Ánh sáng (lux)</div>
+								<span id="lightrange1">
+									100
+								</span>
+								<span> &dash; </span>
+								<span id="lightrange2">
+									12000
+								</span>
+							</div>
+						</div>
+						<div class="col-lg-8 col-md-8 col-sm-6">
+							<div class="range-container">
+								<div class="slider-lighttrack"></div>
+								<input type="range" min="100" max="12000" value="807" id="slider-minLight" oninput="slideMinLight()">
+								<input type="range" min="100" max="12000" value="1614" id="slider-maxLight" oninput="slideMaxLight()">
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-4 col-md-4 col-sm-6">
+							<div class="values">
+								<div class="fw-bold">Độ ẩm (%)</div>
+								<span id="moispoint">
+									100
+								</span>
+							</div>
+						</div>
+						<div class="col-lg-8 col-md-8 col-sm-6">
+							<div class="range-container">
+								<div class="slider-moistrack"></div>
+								<input type="range" min="0" max="100" value="50" id="slider-mois" oninput="slideMois()">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+				  <button type="button" class="btn btn-secondary" id="default1Btn">Lưỡi Hổ</button>
+				  <button type="button" class="btn btn-secondary" id="default2Btn">Lan Chi</button>
+				  <button type="button" class="btn btn-secondary" id="default3Btn">Dương Xỉ</button>
+				  <button type="button" class="btn btn-primary btn-success" id="saveBtn" data-bs-dismiss="modal">Lưu thay đổi</button>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		<script>
+			window.onload = function(){
+				slideMinTemp();
+				slideMaxTemp();
+				slideMinLight();
+				slideMaxLight();
+				slideMois();
+			}
+			//temp
+			let sliderMinTemp = document.getElementById("slider-minTemp");
+			let sliderMaxTemp = document.getElementById("slider-maxTemp");
+			let displayMinTemp = document.getElementById("temprange1");
+			let displayMaxTemp = document.getElementById("temprange2");
+			let tempGap = 0;
+			let sliderTempTrack = document.querySelector(".slider-temptrack");
+			let sliderMaxTempValue = document.getElementById("slider-minTemp").max;
+
+			function slideMinTemp(){
+				if(parseInt(sliderMaxTemp.value) - parseInt(sliderMinTemp.value) <= tempGap){
+					sliderMinTemp.value = parseInt(sliderMaxTemp.value) - tempGap;
+				}
+				displayMinTemp.textContent = sliderMinTemp.value;
+				fillColor();
+			}
+			function slideMaxTemp(){
+				if(parseInt(sliderMaxTemp.value) - parseInt(sliderMinTemp.value) <= tempGap){
+					sliderMaxTemp.value = parseInt(sliderMinTemp.value) + tempGap;
+				}
+				displayMaxTemp.textContent = sliderMaxTemp.value;
+				fillColor();
+			}
+
+			//light
+			let sliderMinLight = document.getElementById("slider-minLight");
+			let sliderMaxLight = document.getElementById("slider-maxLight");
+			let displayMinLight = document.getElementById("lightrange1");
+			let displayMaxLight = document.getElementById("lightrange2");
+			let lightGap = 100;
+			let sliderLightTrack = document.querySelector(".slider-lighttrack");
+			let sliderMaxLightValue = document.getElementById("slider-minLight").max;
+
+			function slideMinLight(){
+				if(parseInt(sliderMaxLight.value) - parseInt(sliderMinLight.value) <= lightGap){
+					sliderMinLight.value = parseInt(sliderMaxLight.value) - lightGap;
+				}
+				displayMinLight.textContent = sliderMinLight.value;
+				fillColor();
+			}
+			function slideMaxLight(){
+				if(parseInt(sliderMaxLight.value) - parseInt(sliderMinLight.value) <= lightGap){
+					sliderMaxLight.value = parseInt(sliderMinLight.value) + lightGap;
+				}
+				displayMaxLight.textContent = sliderMaxLight.value;
+				fillColor();
+			}
+			//mois
+			let sliderMois = document.getElementById("slider-mois");
+			let displayMois = document.getElementById("moispoint");
+			let sliderMoisTrack = document.querySelector(".slider-moistrack");
+			let sliderMaxMoisValue = document.getElementById("slider-mois").max;
+
+			function slideMois(){
+				sliderMois.value = parseInt(sliderMois.value)
+				displayMois.textContent = sliderMois.value;
+				fillColor();
+			}
+
+			//fillColor
+			function fillColor(){
+				percent1 = (sliderMinTemp.value / sliderMaxTempValue) * 100;
+				percent2 = (sliderMaxTemp.value / sliderMaxTempValue) * 100;
+				sliderTempTrack.style.background = `linear-gradient(to right, #dadae5 ${percent1}% , #008000 ${percent1}% , #008000 ${percent2}%, #dadae5 ${percent2}%)`;
+				percent3 = (sliderMinLight.value / sliderMaxLightValue) * 100;
+				percent4 = (sliderMaxLight.value / sliderMaxLightValue) * 100;
+				sliderLightTrack.style.background = `linear-gradient(to right, #dadae5 ${percent3}% , #008000 ${percent3}% , #008000 ${percent4}%, #dadae5 ${percent4}%)`;
+				percent5 = (sliderMois.value / sliderMaxMoisValue * 100);
+				sliderMoisTrack.style.background = `linear-gradient(to right, #008000 ${percent5}%, #dadae5 ${percent5}%)`;
+			}
+			default1Btn.addEventListener('click', () => {
+				sliderMinTemp.value = 25;
+				displayMinTemp.textContent = 25;
+				sliderMaxTemp.value = 39;
+				displayMaxTemp.textContent = 39;
+				sliderMinLight.value = 270;
+				displayMinLight.textContent = 270;
+				sliderMaxLight.value = 807;
+				displayMaxLight.textContent = 807;
+				sliderMois.value = 23;
+				displayMois.textContent= 23;
+				fillColor()
+			})
+			default2Btn.addEventListener('click', () => {
+				sliderMinTemp.value = 15;
+				displayMinTemp.textContent = 15;
+				sliderMaxTemp.value = 30;
+				displayMaxTemp.textContent = 30;
+				sliderMinLight.value = 1614;
+				displayMinLight.textContent = 1614;
+				sliderMaxLight.value = 10764;
+				displayMaxLight.textContent = 10764;
+				sliderMois.value = 60;
+				displayMois.textContent= 60;
+				fillColor()
+			})
+			default3Btn.addEventListener('click', () => {
+				sliderMinTemp.value = 27;
+				displayMinTemp.textContent = 27;
+				sliderMaxTemp.value = 38;
+				displayMaxTemp.textContent = 38;
+				sliderMinLight.value = 807;
+				displayMinLight.textContent = 807;
+				sliderMaxLight.value = 1614;
+				displayMaxLight.textContent = 1614;
+				sliderMois.value = 35;
+				displayMois.textContent= 35;
+				fillColor()
+			})
+			
 		</script>
 	</body>
-
+	
 </html>
